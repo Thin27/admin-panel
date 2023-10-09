@@ -16,4 +16,8 @@ class Employee extends Model
         'email',
         'phone'
     ];
+
+    public function factory() {
+        return $this->belongsTo(Factory::class);
+    }
 }

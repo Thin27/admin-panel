@@ -9,12 +9,17 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
+                    @if (session('status'))
+                        <div id="statusMessage" class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+                            <p>{{ session('status') }}</p>
+                        </div>
+                    @endif
 
                     <div class="flex items-center gap-4 mb-4">
                         <x-primary-button
                             class="ms-auto"
                             x-data=""
-                            x-on:click.prevent="$dispatch('open-modal', 'add-update-factory')"
+                            x-on:click.prevent="$dispatch('open-modal', 'add-factory')"
                         >{{ __('Add') }}</x-primary-button>
                     </div>
 
@@ -22,98 +27,110 @@
                     <div class="flex flex-col">
                         <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
                             <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Factory Name
-                                                </th>
-                                                <th scope="col" class="relative px-6 py-3">
-                                                    <span class="sr-only">Edit</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody class="bg-white divide-y divide-gray-200">
-                                            @foreach ($factories as $factory)
+                                @if (count($factories) > 0)
+                                    <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
                                                 <tr>
-                                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {{ $factory->name }}
-                                                    </td>
-                                                    {{-- <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <a href="{{ route('tasks.edit', $factory) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                                                    </td> --}}
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Name
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                        Location
+                                                    </th>
+                                                    <th scope="col" class="px-6 py-3">
+                                                        <span class="sr-only">Action</span>
+                                                    </th>
                                                 </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
+                                            </thead>
+                                            <tbody class="bg-white divide-y divide-gray-200">
+                                                @foreach ($factories as $factory)
+                                                    <tr>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {{ $factory->factory_name }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {{ $factory->location }}
+                                                        </td>
+                                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            <x-secondary-button
+                                                                class="ms-auto"
+                                                                x-data=""
+                                                                x-on:click.prevent="$dispatch('open-modal', 'update-factory{{ $factory->id }}')"
+                                                            >{{ __('Edit') }}</x-secondary-button>
+                                                            <x-danger-button
+                                                                class="ms-2"
+                                                                x-data=""
+                                                                x-on:click.prevent="$dispatch('open-modal', 'delete-factory{{ $factory->id }}')"
+                                                            >{{ __('Delete') }}</x-danger-button>
+                                                        </td>
 
-                                </div>
-                                <div class="mt-4">
-                                    {{ $factories->links() }}
-                                </div>
+                                                        <x-modal name="{{'update-factory'.$factory->id}}" :show="$errors->isNotEmpty()" focusable>
+                                                            <div class="p-6">
+                                                                <x-factory-form 
+                                                                    method="put" 
+                                                                    action="{{route('factory.update', $factory->id)}}"
+                                                                    :factory-data="$factory">
+                                                                </x-factory-form>
+                                                            </div>
+                                                        </x-modal>
+
+                                                        <x-modal name="{{'delete-factory'.$factory->id}}" focusable>
+                                                            <div class="p-6">
+                                                                <form method="post" action="{{ route('factory.destroy', $factory->id) }}">
+                                                                    @csrf
+                                                                    @method('delete')
+                                                        
+                                                                    <h2 class="text-lg font-medium text-gray-900">
+                                                                        {{ __("Are you sure you want to delete ".$factory->factory_name." factory?") }}
+                                                                    </h2>
+                                                        
+                                                                    <div class="mt-6 flex justify-end">
+                                                                        <x-secondary-button x-on:click="$dispatch('close')">
+                                                                            {{ __('No') }}
+                                                                        </x-secondary-button>
+                                                        
+                                                                        <x-danger-button class="ml-3">
+                                                                            {{ __('Yes') }}
+                                                                        </x-danger-button>
+                                                                    </div>
+                                                                </form>
+                                                            </div>
+                                                        </x-modal>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="mt-4">
+                                        {{ $factories->links() }}
+                                    </div>
+                                @else
+                                    <div class="bg-gray-50 px-6 py-4 text-sm text-gray-500 flex justify-center">{{__('No Record')}}</div>
+                                @endif
                             </div>
                         </div>
                     </div>
-
-                    <x-modal name="add-update-factory" focusable>
-                        <form method="post" action="{{ $factory ? route('factory.update', $factory->id) : route('factory.store') }}" class="p-6">
-                            @csrf
-                            @if($factory)
-                                @method('put')
-                            @endif
-                
-                            <h2 class="text-lg font-medium text-gray-900">
-                                {{ $factory ? __('Update '.$factory->factory_name.' Factory') : __('Add New Factory') }}
-                            </h2>
-                
-                            <div class="mt-6">
-                                <x-input-label for="factory_name" :value="__('Factory Name')" />
-                                <x-text-input id="factory_name" name="factory_name" type="text" class="mt-1 block w-full" 
-                                    :value={{ $factory ? old('factory_name', $factory->factory_name) : '' }} 
-                                    required autofocus autocomplete="factory_name" />
-                                <x-input-error class="mt-2" :messages="$errors->get('factory_name')" />
-                            </div>
-                
-                            <div class="mt-6">
-                                <x-input-label for="location" :value="__('Location')" />
-                                <x-text-input id="location" name="location" type="text" class="mt-1 block w-full" 
-                                :value={{ $factory ? old('location', $factory->location) : '' }}
-                                required autofocus autocomplete="location" />
-                                <x-input-error class="mt-2" :messages="$errors->get('location')" />
-                            </div>
-                
-                            <div class="mt-6">
-                                <x-input-label for="email" :value="__('Email')" />
-                                <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" 
-                                :value={{ $factory ? old('email', $factory->email) : ''}}
-                                required autofocus autocomplete="email" />
-                                <x-input-error class="mt-2" :messages="$errors->get('email')" />
-                            </div>
-                
-                            <div class="mt-6">
-                                <x-input-label for="website" :value="__('Website')" />
-                                <x-text-input id="website" name="website" type="text" class="mt-1 block w-full" 
-                                :value={{ $factory ? old('website', $factory->website) : ''}} 
-                                required autofocus autocomplete="website" />
-                                <x-input-error class="mt-2" :messages="$errors->get('website')" />
-                            </div>
-                
-                            <div class="mt-6 flex justify-end">
-                                <x-secondary-button x-on:click="$dispatch('close')">
-                                    {{ __('Cancel') }}
-                                </x-secondary-button>
-                
-                                <x-primary-button class="ml-3">
-                                    {{ $factory ? __('Update') : __('Add') }}
-                                </x-primary-button>
-                            </div>
-                        </form>
-                    </x-modal>
 
                 </div>
             </div>
         </div>
     </div>
+
+    <x-modal name="add-factory" :show="$errors->isNotEmpty()" focusable>
+        <div class="p-6">
+            <x-factory-form 
+                method="post" 
+                action="{{route('factory.store')}}">
+            </x-factory-form>
+        </div>
+    </x-modal>
+
+    <script>
+        $(function() {
+            setTimeout(() => {
+                $('#statusMessage').hide();
+            }, 5000)
+        })
+    </script>
 </x-app-layout>

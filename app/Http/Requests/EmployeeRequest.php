@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class FactoryRequest extends FormRequest
+class EmployeeRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +22,11 @@ class FactoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'factory_name' => 'required',
-            'location' => 'required',
+            'firstname' => 'required',
+            'lastname' => 'required',
+            'factory' => 'nullable | numeric | exists:App\Models\Factory,id',
             'email' => 'nullable | email',
-            'website' => 'nullable'
+            'phone' => 'nullable'
         ];
     }
 }
