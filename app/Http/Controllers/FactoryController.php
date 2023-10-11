@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
-
 use App\Http\Requests\FactoryRequest;
 
+use App\Events;
 use App\Models\Factory;
 
 class FactoryController extends Controller
@@ -26,13 +26,14 @@ class FactoryController extends Controller
         $email = $request->get('email');
         $website = $request->get('website');
 
-        Factory::create([
+        $factory = Factory::create([
             'factory_name' => $factoryName,
             'location' => $location,
             'email' => $email,
             'website' => $website
         ]);
 
+        event(new Events\CreatingFactory($factory));
         return Redirect::route('factory.index')->with('status', 'New factory saved!');
     }
 
@@ -42,14 +43,16 @@ class FactoryController extends Controller
         $email = $request->get('email');
         $website = $request->get('website');
 
-        Factory::where('id', $id)
-                ->update([
-                    'factory_name' => $factoryName,
-                    'location' => $location,
-                    'email' => $email,
-                    'website' => $website
-                ]);
+        $factory = Factory::where('id', $id)->first();
+        $oldFactory = clone $factory;
+        $factory->update([
+            'factory_name' => $factoryName,
+            'location' => $location,
+            'email' => $email,
+            'website' => $website
+        ]);
 
+        event(new Events\UpdatingFactory($factory, $oldFactory));
         return Redirect::route('factory.index')->with('status', $factoryName . ' factory updated!');
     }
 
@@ -63,6 +66,7 @@ class FactoryController extends Controller
         $factoryName = $factory->factory_name;
         $factory->delete();
 
+        event(new Events\DeletingFactory($factory));
         return Redirect::route('factory.index')->with('status', $factoryName . ' factory deleted!');
     }
 }

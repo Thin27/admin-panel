@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Http\Request;
 use App\Http\Requests\EmployeeRequest;
 
+use App\Events;
 use App\Models\Employee;
 use App\Models\Factory;
 
@@ -31,7 +32,7 @@ class EmployeeController extends Controller
         $email = $request->get('email');
         $phone = $request->get('phone');
 
-        Employee::create([
+        $employee = Employee::create([
             'firstname' => $firstname,
             'lastname' => $lastname,
             'factory_id' => $factoryId,
@@ -39,6 +40,7 @@ class EmployeeController extends Controller
             'phone' => $phone
         ]);
 
+        event(new Events\CreatingEmployee($employee));
         return Redirect::route('employee.index')->with('status', 'New employee saved!');
     }
 
@@ -49,8 +51,9 @@ class EmployeeController extends Controller
         $email = $request->get('email');
         $phone = $request->get('phone');
 
-        Employee::where('id', $id)
-                ->update([
+        $employee = Employee::where('id', $id)->first();
+        $oldEmployee = clone $employee;
+        $employee->update([
                     'firstname' => $firstname,
                     'lastname' => $lastname,
                     'factory_id' => $factoryId,
@@ -58,6 +61,7 @@ class EmployeeController extends Controller
                     'phone' => $phone
                 ]);
 
+        event(new Events\UpdatingEmployee($employee, $oldEmployee));
         return Redirect::route('employee.index')->with('status', 'Employee '.$firstname.' updated!');
     }
 
@@ -71,6 +75,7 @@ class EmployeeController extends Controller
         $employeeName = $employee->firstname;
         $employee->delete();
 
+        event(new Events\DeletingEmployee($employee));
         return Redirect::route('employee.index')->with('status', $employeeName . ' employee deleted!');
     }
 }
