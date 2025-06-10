@@ -10,7 +10,8 @@
         $method = 'POST';
         $title = "Edit {$factoryData->factory_name} Factory";
     }
-@endphp
+    //test
+@endphp 
 
 <div>
     <form {{ 'method='.$method }} {{ $attributes }}>
