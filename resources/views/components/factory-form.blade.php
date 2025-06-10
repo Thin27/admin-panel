@@ -10,7 +10,7 @@
         $method = 'POST';
         $title = "Edit {$factoryData->factory_name} Factory";
     }
-    //test
+
 @endphp 
 
 <div>
