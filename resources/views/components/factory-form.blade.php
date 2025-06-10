@@ -5,6 +5,8 @@
     $method = str($method)->upper();
     $title = 'Add New Factory';
 
+    // test 2
+
     if ($method == 'PUT' && $factoryData) {
         $propsMethod = $method;
         $method = 'POST';
